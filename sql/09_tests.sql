@@ -204,3 +204,12 @@ HAVING MAX(os.niveau) >= 5
 ORDER BY nb_ordres_consecutifs DESC;
 
 
+
+--------------------------------------------------
+--- test de la fonction VWAP ---
+SELECT crypto.fn_vwap(3, '2025-12-25 11:41:11.685113+01') AS vwap;
+-- test de la fonction RSI
+SELECT *
+FROM crypto.fn_rsi(1, 14)
+ORDER BY trade_date;
+
