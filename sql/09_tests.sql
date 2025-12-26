@@ -138,6 +138,71 @@ SELECT * FROM crypto.audit_trail
 ----Teste With Ajout D'un utilusateur Apres l'exécution de Ordre-----
 INSERT INTO crypto.ordres (utilisateur_id, paire_id, type_ordre, mode, quantite, prix, statut) VALUES
 (6, 2, 'buy', 'limit', 0.10000000, 42000.00000000, 'open');
+-----Test LATERAL JOIN – Statistiques par paire-----
+SELECT
+    p.paire_id,
+    stats.nb_trades,
+    stats.volume_total
+FROM (
+    SELECT DISTINCT paire_id
+    FROM trades
+) AS p
+CROSS JOIN LATERAL (
+    SELECT
+        COUNT(*) AS nb_trades,
+        COALESCE(SUM(t.quantite), 0) AS volume_total
+    FROM trades t
+    WHERE t.paire_id = p.paire_id
+) AS stats
+ORDER BY p.paire_id;
 
+------Test DISTINCT ON – Dernier prix par paire
+SELECT DISTINCT ON (paire_id)
+    paire_id,
+    prix,
+    date_execution
+FROM trades
+ORDER BY paire_id, date_execution DESC;
+
+
+------Test DISTINCT ON – Dernier statut par ordre
+SELECT DISTINCT ON (id)
+    id AS ordre_id,
+    statut,
+    date_creation
+FROM ordres
+ORDER BY id, date_creation DESC;
+
+---Test RECURSIVE CTE – Détection d’anomalies---
+WITH RECURSIVE ordre_sequence AS (
+    SELECT
+        id,
+        utilisateur_id,
+        date_creation,
+        1 AS niveau
+    FROM ordres
+
+    UNION ALL
+
+    SELECT
+        o.id,
+        o.utilisateur_id,
+        o.date_creation,
+        os.niveau + 1
+    FROM ordres o
+    JOIN ordre_sequence os
+      ON o.utilisateur_id = os.utilisateur_id
+     AND o.date_creation > os.date_creation
+     AND o.date_creation <= os.date_creation + INTERVAL '10 seconds'
+)
+SELECT
+    os.utilisateur_id,
+    u.nom,
+    MAX(os.niveau) AS nb_ordres_consecutifs
+FROM ordre_sequence os
+JOIN utilisateurs u ON u.id = os.utilisateur_id
+GROUP BY os.utilisateur_id, u.nom
+HAVING MAX(os.niveau) >= 5
+ORDER BY nb_ordres_consecutifs DESC;
 
 
