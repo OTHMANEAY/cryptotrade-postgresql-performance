@@ -215,3 +215,67 @@ SELECT *
 FROM crypto.fn_rsi(1, 14)
 ORDER BY trade_date;
 
+
+-- =====================================================
+-- TESTS DES VUES & MATERIALIZED VIEW
+-- Projet CryptoTrade
+-- =====================================================
+
+SET search_path TO crypto;
+
+-- =====================================================
+-- 1️⃣ Test vue_derniers_prix
+-- Objectif : 1 ligne par paire avec le dernier prix
+-- =====================================================
+SELECT
+    'TEST vue_derniers_prix' AS test_name,
+    *
+FROM vue_derniers_prix
+ORDER BY paire_id;
+
+
+-- Vérification logique (comparaison)
+SELECT
+    'VERIF MAX(date_maj)' AS test_name,
+    paire_id,
+    MAX(date_maj) AS date_max
+FROM prix_marche
+GROUP BY paire_id
+ORDER BY paire_id;
+
+
+-- =====================================================
+-- 2️⃣ Test vue_volume_7j
+-- Objectif : volume total par paire sur 7 jours
+-- =====================================================
+SELECT
+    'TEST vue_volume_7j' AS test_name,
+    *
+FROM vue_volume_7j
+ORDER BY volume_total DESC;
+
+
+-- Vérification manuelle
+SELECT
+    'VERIF volume_7j' AS test_name,
+    paire_id,
+    SUM(volume) AS volume_total
+FROM prix_marche
+WHERE date_maj >= CURRENT_DATE - INTERVAL '7 days'
+GROUP BY paire_id
+ORDER BY volume_total DESC;
+
+
+-- =====================================================
+-- 3️⃣ Test vue_vwap
+-- Objectif : VWAP par paire
+-- =====================================================
+SELECT
+    'TEST vue_vwap' AS test_name,
+    *
+FROM vue_vwap
+ORDER BY paire_id;
+
+
+-- Vérification VWAP pour u
+
