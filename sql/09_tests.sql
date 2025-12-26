@@ -88,10 +88,35 @@ FROM pg_index i
 JOIN pg_class c ON c.oid = i.indrelid
 WHERE relname IN ('ordres', 'trades', 'audit_trail');
 
+----------les teste de partition
+-----test de order-------
+INSERT INTO ordres_parent
+(utilisateur_id, paire_id, type_ordre, mode, quantite, prix, statut, created_at)
+VALUES
+(1, 1, 'buy', 'limit', 0.1, 42000, 'open', '2025-12-15');
+---
+SELECT * FROM ordres_2025_12;
 
 
+---faire insertion (test de trades)
+INSERT INTO trades_parent
+(ordre_buy_id, ordre_sell_id, paire_id, prix, quantite, created_at)
+VALUES
+(1, 2, 1, 42000, 0.1, '2025-12-15');
 
+SELECT * FROM trades_2025_12;
 
+-------------teste de audit-----
+--test-
+INSERT INTO audit_trail_parent (table_cible, record_id, action, utilisateur_id, details)
+VALUES 
+('clients', 1, 'INSERT', 101, 'Nouvel enregistrement clients'),
+('clients', 1, 'UPDATE', 101, 'Modification nom client'),
+('clients', 1, 'DELETE', 101, 'Suppression du client');
+
+SELECT * FROM audit_trail_insert;
+SELECT * FROM audit_trail_update;
+SELECT * FROM audit_trail_delete;
 
 
 
