@@ -118,6 +118,26 @@ SELECT * FROM audit_trail_insert;
 SELECT * FROM audit_trail_update;
 SELECT * FROM audit_trail_delete;
 
+-----TEST Trrigers -----
+INSERT INTO crypto.ordres (
+    id, utilisateur_id, paire_id, type_ordre,
+    mode, quantite, prix, statut, date_creation
+)
+VALUES (
+    4, 1, 1, 1,
+    'market', 5, 0,
+    'EN_ATTENTE', CURRENT_DATE
+);
+
+--------Teste Trrigers--------
+----Insertion Teste D'Erreur------
+INSERT INTO crypto.utilisateurs (nom, email, statut) VALUES
+('AYAOU OTHMANE', 'ayaou@crypto.com', 'actif');
+SELECT * FROM crypto.audit_trail
+
+----Teste With Ajout D'un utilusateur Apres l'exécution de Ordre-----
+INSERT INTO crypto.ordres (utilisateur_id, paire_id, type_ordre, mode, quantite, prix, statut) VALUES
+(6, 2, 'buy', 'limit', 0.10000000, 42000.00000000, 'open');
 
 
 
