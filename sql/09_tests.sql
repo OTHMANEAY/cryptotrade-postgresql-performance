@@ -243,6 +243,33 @@ FROM prix_marche
 GROUP BY paire_id
 ORDER BY paire_id;
 
+-- =====================================================
+-- TESTS DES VUES & MATERIALIZED VIEW
+-- Projet CryptoTrade
+-- =====================================================
+
+SET search_path TO crypto;
+
+-- =====================================================
+-- 1️⃣ Test vue_derniers_prix
+-- Objectif : 1 ligne par paire avec le dernier prix
+-- =====================================================
+SELECT
+    'TEST vue_derniers_prix' AS test_name,
+    *
+FROM vue_derniers_prix
+ORDER BY paire_id;
+
+
+-- Vérification logique (comparaison)
+SELECT
+    'VERIF MAX(date_maj)' AS test_name,
+    paire_id,
+    MAX(date_maj) AS date_max
+FROM prix_marche
+GROUP BY paire_id
+ORDER BY paire_id;
+
 
 -- =====================================================
 -- 2️⃣ Test vue_volume_7j
@@ -277,5 +304,42 @@ FROM vue_vwap
 ORDER BY paire_id;
 
 
--- Vérification VWAP pour u
+-- Vérification VWAP pour une paire (ex: paire_id = 1)
+SELECT
+    'VERIF VWAP paire 1' AS test_name,
+    SUM(prix * volume) / SUM(volume) AS vwap_calcule
+FROM prix_marche
+WHERE paire_id = 1;
 
+
+-- =====================================================
+-- 4️⃣ Test materialized view mat_vwap
+-- =====================================================
+SELECT
+    'TEST mat_vwap' AS test_name,
+    *
+FROM mat_vwap
+ORDER BY paire_id;
+
+
+-- Rafraîchissement
+REFRESH MATERIALIZED VIEW mat_vwap;
+
+
+-- =====================================================
+-- 5️⃣ Test performance
+-- =====================================================
+
+EXPLAIN ANALYZE
+SELECT *
+FROM vue_vwap
+WHERE paire_id = 1;
+
+EXPLAIN ANALYZE
+SELECT *
+FROM mat_vwap
+WHERE paire_id = 1;
+
+-- =====================================================
+-- FIN DES TESTS
+-- =====================================================
